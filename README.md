@@ -1,4 +1,9 @@
-# lmo-oob
+Let Me Out (LMO) of your .net is a Egress testing and verification frame work.
+
+The resources in this repository are publicly available as well as the server (LetMeOutOfYour.net).
+
+
+# lmo-oob.py
 LetMeOutOfYour.net OOB
 
 This is an out of band (via DNS) checker to see if a host can talk outbound to LetMeOutOfYour.net
@@ -13,7 +18,7 @@ Here is an example run inside a network that only allows 80 and 443 out, with ve
 (this also shows that the network doesn't do protocol matching so it's possible SSH can be sent out 80/443)
 
 ```
-$ ./lmo.py
+$ ./lmo-oob.py
 Testing: http://letmeoutofyour.net:80
 w00tw00t
 wtsvmufbpr.NB2HI4B2F4XWYZLUNVSW65LUN5THS33VOIXG4ZLUHI4DA-A-A-A.malicious.link
