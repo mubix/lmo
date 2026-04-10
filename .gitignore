@@ -1,0 +1,9 @@
+# Compiled binary
+server/letmeout
+
+# Credentials
+*.ini
+do-certbot.ini
+
+# Reference files from the original host
+from_host/
