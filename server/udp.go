@@ -78,6 +78,12 @@ func buildDNSResponse(q []byte) ([]byte, bool) {
 	question := q[12 : end+1+4]
 	qtype := binary.BigEndian.Uint16(q[end+1 : end+3])
 
+	// Refuse ANY queries (qtype 255) — they exist almost exclusively as an
+	// amplification vector and have no legitimate egress-test use case.
+	if qtype == 255 {
+		return nil, false
+	}
+
 	// Build response header
 	rd := q[2] & 0x01 // preserve Recursion Desired flag
 	flags := []byte{0x81 | rd, 0x80}
