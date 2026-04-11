@@ -9,10 +9,18 @@ import (
 	"time"
 )
 
+// udpSem caps the number of concurrent handleUDP goroutines, analogous to
+// connSem for TCP. Shared across all read loops.
+var udpSem chan struct{}
+
+const udpMaxHandlers = 10000
+
 // listenUDP spawns flagNumListeners parallel UDP read loops (each with
 // SO_REUSEPORT). The kernel load-balances incoming datagrams across them.
 func listenUDP(addr string) {
-	log.Printf("udp listener on %s (%d read loops)", addr, flagNumListeners)
+	udpSem = make(chan struct{}, udpMaxHandlers)
+	log.Printf("udp listener on %s (%d read loops, max %d handlers)",
+		addr, flagNumListeners, udpMaxHandlers)
 	lc := net.ListenConfig{Control: setReusePort}
 	for i := 0; i < flagNumListeners; i++ {
 		go udpReadLoop(lc, addr, i)
@@ -33,10 +41,20 @@ func udpReadLoop(lc net.ListenConfig, addr string, id int) {
 		if err != nil {
 			continue
 		}
-		// Copy into its own slice for the goroutine
-		pkt := make([]byte, n)
-		copy(pkt, buf[:n])
-		go handleUDP(conn, client, pkt)
+		select {
+		case udpSem <- struct{}{}:
+			// Copy into its own slice for the goroutine
+			pkt := make([]byte, n)
+			copy(pkt, buf[:n])
+			go func() {
+				defer func() { <-udpSem }()
+				handleUDP(conn, client, pkt)
+			}()
+		default:
+			// At capacity — drop the datagram. Unlike TCP we do not emit
+			// an overload response: UDP has no connection state to clean
+			// up and sending anything back would be amplification.
+		}
 	}
 }
 
