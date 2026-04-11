@@ -110,7 +110,7 @@ func buildDNSResponse(q []byte) ([]byte, bool) {
 	// Build response header
 	rd := q[2] & 0x01 // preserve Recursion Desired flag
 	flags := []byte{0x81 | rd, 0x80}
-	qcounts := append([]byte{}, q[4:6]...)
+	qcounts := []byte{0x00, 0x01} // QDCOUNT = 1 (we only carry one question)
 
 	answer := buildAnswer(qtype)
 
