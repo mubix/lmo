@@ -41,6 +41,11 @@ func udpReadLoop(lc net.ListenConfig, addr string, id int) {
 }
 
 func handleUDP(conn *net.UDPConn, client *net.UDPAddr, data []byte) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("udp panic from %v: %v", client, r)
+		}
+	}()
 	if resp, ok := buildDNSResponse(data); ok {
 		cntDNS.Add(1)
 		conn.WriteToUDP(resp, client)
