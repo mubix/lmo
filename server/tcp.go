@@ -178,10 +178,6 @@ func handleSSH(conn net.Conn) {
 	cntSSH.Add(1)
 	conn.SetDeadline(time.Now().Add(3 * time.Second))
 	conn.Write(respSSH)
-
-	// Politely read rest of client's version line, then close
-	buf := make([]byte, 256)
-	conn.Read(buf)
 }
 
 // listenSMTP handles port 25 directly (iptables RETURN bypasses the DNAT).
